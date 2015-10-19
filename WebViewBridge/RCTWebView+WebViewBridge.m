@@ -97,25 +97,24 @@ static dispatch_queue_t serialQueue;
 
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
 {
-  //access to provate variable
-  RCTEventDispatcher *_eventDispatcher = [self valueForKey:@"_eventDispatcher"];
-
   //we need to check whether it's coming from our request schema
   if ([self isSignalTriggered:webView withRequest:request]) {
     return NO;
   }
 
-  // We have this check to filter out iframe requests and whatnot
-  BOOL isTopFrame = [request.URL isEqual:request.mainDocumentURL];
-  if (isTopFrame) {
-    NSMutableDictionary *event = [self baseEvent];
-    [event addEntriesFromDictionary: @{
-                                      @"url": [request.URL absoluteString],
-                                      @"navigationType": @(navigationType)
-                                      }];
-    [_eventDispatcher sendInputEventWithName:@"topLoadingStart" body:event];
+  if (self.onLoadingStart) {
+    // We have this check to filter out iframe requests and whatnot
+    BOOL isTopFrame = [request.URL isEqual:request.mainDocumentURL];
+    if (isTopFrame) {
+      NSMutableDictionary *event = [self baseEvent];
+      [event addEntriesFromDictionary: @{
+                                         @"url": (request.URL).absoluteString,
+                                         @"navigationType": @(navigationType)
+                                         }];
+      self.onLoadingStart(event);
+    }
   }
-
+  
   // AJAX handler
   return ![request.URL.scheme isEqualToString:RCTJSAJAXScheme];
 }
