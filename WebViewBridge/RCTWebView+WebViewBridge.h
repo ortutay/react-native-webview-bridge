@@ -11,6 +11,8 @@
 
 @interface RCTWebView (WebViewBridge)
 
+@property (nonatomic, copy) RCTDirectEventBlock onLoadingStart;
+
 - (void)injectBridgeScript:(NSNumber*)reactTag;
 - (void)print;
 - (void)eval:(NSString *) value;
